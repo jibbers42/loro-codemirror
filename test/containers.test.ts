@@ -14,6 +14,8 @@ type Layout = {
     name: string;
     setup: (doc: LoroDoc) => void;
     text: (doc: LoroDoc) => LoroText;
+    /** Changes the bound text's parent, so the parent's event comes first. */
+    editParent?: (doc: LoroDoc) => void;
 };
 
 const layouts: Layout[] = [
@@ -54,6 +56,7 @@ const layouts: Layout[] = [
             doc.getText("other").insert(0, "x");
         },
         text: (doc) => doc.getMap("files").get("a.md") as LoroText,
+        editParent: (doc) => doc.getMap("files").set("title", "b"),
     },
 ];
 
@@ -93,9 +96,7 @@ describe.each(layouts)("a doc with several containers: $name", (layout) => {
 
             const remote = peerOf(doc, 2n);
             edit(remote, layout.text(remote));
-            if (layout.name === "bound text inside a map") {
-                remote.getMap("files").set("title", "b");
-            }
+            layout.editParent?.(remote);
             remote.commit();
             sync(remote, doc);
 

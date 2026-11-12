@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { LoroDoc, LoroText } from "loro-crdt";
+import { LoroDoc } from "loro-crdt";
 import { afterEach, describe, expect, test } from "vitest";
 import { LoroSyncPlugin } from "../src/index.ts";
-import { makeView, peerOf, sync, tick, type } from "./helpers.ts";
+import { makeView, tick, type } from "./helpers.ts";
 
 afterEach(() => {
     document.body.innerHTML = "";
