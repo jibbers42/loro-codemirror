@@ -11,7 +11,7 @@ if (typeof Range !== "undefined" && !Range.prototype.getClientRects) {
         ({ ...rect, toJSON: () => rect }) as DOMRect;
 }
 
-export const tick =() => new Promise((resolve) => setTimeout(resolve, 0));
+export const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 export function makeView(doc: string, extensions: Extension): EditorView {
     return new EditorView({
