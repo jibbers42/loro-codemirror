@@ -61,14 +61,12 @@ export class UndoPluginValue implements PluginValue {
         this.sub = doc.subscribe((e) => {
             if (e.origin !== "undo") return;
 
-            let changes: ChangeSpec[] = [];
+            // As in sync.ts: this text's event may come after others.
+            const text = this.getTextFromDoc(this.doc);
+            const changes: ChangeSpec[] = [];
             let pos = 0;
-            for (let { diff, target } of e.events) {
-                const text = this.getTextFromDoc(this.doc);
-                // Skip if the event is not a text event
-                if (diff.type !== "text") return;
-                // Skip if the event is not for the current document
-                if (target !== text.id) return;
+            for (const { diff, target } of e.events) {
+                if (diff.type !== "text" || target !== text.id) continue;
                 const textDiff = diff.diff;
                 for (const delta of textDiff) {
                     if (delta.insert) {
@@ -87,6 +85,8 @@ export class UndoPluginValue implements PluginValue {
                         pos += delta.retain;
                     }
                 }
+            }
+            if (changes.length > 0) {
                 this.view.dispatch({
                     changes,
                     annotations: [loroSyncAnnotation.of("undo")],

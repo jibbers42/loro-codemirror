@@ -57,14 +57,13 @@ export class LoroSyncPluginValue implements PluginValue {
             return;
         }
         if (e.by === "import") {
-            let changes: ChangeSpec[] = [];
+            // A batch holds an event per changed container, parents first:
+            // this text's event may come after others.
+            const text = this.getTextFromDoc(this.doc);
+            const changes: ChangeSpec[] = [];
             let pos = 0;
-            for (let { diff, target } of e.events) {
-                const text = this.getTextFromDoc(this.doc);
-                // Skip if the event is not a text event
-                if (diff.type !== "text") return;
-                // Skip if the event is not for the current document
-                if (target !== text.id) return;
+            for (const { diff, target } of e.events) {
+                if (diff.type !== "text" || target !== text.id) continue;
                 const textDiff = diff.diff;
                 for (const delta of textDiff) {
                     if (delta.insert) {
@@ -83,6 +82,8 @@ export class LoroSyncPluginValue implements PluginValue {
                         pos += delta.retain;
                     }
                 }
+            }
+            if (changes.length > 0) {
                 this.view.dispatch({
                     changes,
                     annotations: [loroSyncAnnotation.of(this)],
